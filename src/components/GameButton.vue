@@ -31,10 +31,33 @@ export default {
 
 <style scoped>
 .game-button {
-  display: inline-block;
-  padding: 0 0.5rem;
-  max-width: 8rem;
-  height: 6rem;
-  border: 1px black solid;
+display:inline-block;
+padding:0.3em 1.2em;
+margin:0 0.3em 0.3em 0;
+border-radius:2em;
+height: 4rem;
+width: 8rem;
+box-sizing: border-box;
+text-decoration:none;
+font-family:'Roboto',sans-serif;
+font-weight:300;
+color:#333333;
+background-color:lightgray;
+text-align:center;
+transition: all 0.2s;
+font-weight: bolder;
+text-align: center;
+padding: 1.5rem;
+  box-shadow: 0 0.25rem 0 0 rgba(0, 0, 0, 0.25);
+
+}
+.game-button:hover{
+background-color:#eeeeee;
+  transform: translateY(-0.25rem);
+  box-shadow: 0 0.375rem 0 0 rgba(0, 0, 0, 0.25);
+}
+.game-button:active{
+    box-shadow: 0 0 0;
+  transform: translateY(0);
 }
 </style>

@@ -2,24 +2,28 @@
       <section class="game-controls">
     <GameButton
       action="deal"
-      label="deal face up"
+      label="HIT"
       :isEnabled="true"
       v-on:deal="$emit('deal-up')"
     />
     <GameButton
       action="deal"
-      label="deal face down"
+      label="DEALER"
       :isEnabled="true"
       v-on:deal="$emit('deal-down')"
     />
     <GameButton
       action="shuffle"
-      label="shuffle"
+      label="NEW"
       :isEnabled="true"
       v-on:shuffle="$emit('shuffle')"
+    />    
+    <GameButton
+      action="reveal"
+      label="REVEAL"
+      :isEnabled="true"
+      v-on:reveal="$emit('reveal')"
     />
-    <!--  <button @click="shuffleDeck" class="button">Shuffle</button>
-    <button @click="deal" class="button">Deal</button>-->
   </section>
 </template>
 

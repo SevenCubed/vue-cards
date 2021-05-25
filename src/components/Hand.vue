@@ -1,36 +1,50 @@
 <template>
-  <div
-    class="game-hand"
-  >
+  <div class="game-hand">
     <transition-group name="deal" tag="div" class="cards">
-        <Card
-          v-for="card in hand"
-          :key="card.id"
-          :card="card"
-        />
+      <Card v-for="card in hand" :key="card.id" :card="card" />
     </transition-group>
+    <Total :total="total" :hand="hand" />
   </div>
 </template>
 
 <script>
 import Card from "./Card";
-
-export default{
-    props: {
-        hand: {
-            type: Array,
-            required: true
-        },
-        faceDown: {
-            type: Boolean,
-            required: false,
-            default: false
-        }
+import Total from "./Total";
+export default {
+  props: {
+    hand: {
+      type: Array,
+      required: true,
     },
-      components: {
-    Card,
+    faceDown: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
-}
+  components: {
+    Card,
+    Total,
+  },
+  computed: {
+    total() {
+    if (this.hand.length < 2) return
+    if (this.hand.find(card => card.faceDown)) return
+    let valueMap = this.hand.map(card => card.value);
+    let total = valueMap.reduce((x, y) => x + y);
+    let lowAce = 0;
+    console.log(this.hand[0])
+    if (total > 21) {
+        if (valueMap.indexOf(11) != -1) {
+            //this.hand[this.hand.indexOf(11)].value = 1 //No mutating props? Emit!
+            lowAce = 10;
+            console.log('Low Ace detected, substracting 10')
+        }
+    }
+    return total-lowAce;
+    },
+  },
+};
 </script>
 
 
@@ -40,7 +54,8 @@ export default{
   transition: transform 0.2s ease;
 }
 
-.game-hand.is-active, .game-hand.is-split.is-active {
+.game-hand.is-active,
+.game-hand.is-split.is-active {
   position: absolute;
   max-width: 55%;
   z-index: 100;
