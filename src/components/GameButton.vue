@@ -49,14 +49,18 @@ font-weight: bolder;
 text-align: center;
 padding: 1.5rem;
   box-shadow: 0 0.25rem 0 0 rgba(0, 0, 0, 0.25);
-
 }
-.game-button:hover{
+
+.game-button.is-disabled {
+  opacity: 0.5;
+}
+
+.game-button:not(.is-disabled):not(:active):hover{
 background-color:#eeeeee;
   transform: translateY(-0.25rem);
   box-shadow: 0 0.375rem 0 0 rgba(0, 0, 0, 0.25);
 }
-.game-button:active{
+.game-button:not(.is-disabled):active{
     box-shadow: 0 0 0;
   transform: translateY(0);
 }

@@ -2,19 +2,34 @@
   <h1>Vue cards</h1>
   <transition-group name="shuffleMedium" tag="div">
     <section class="dealer hand">
-      <Hand :hand="hand[0]" />
+      <Hand
+        :hand="hand[0]"
+        v-on:log="log"
+        v-on:blackjack="blackjack(dealer)"
+        v-on:bust="bust(dealer)"
+        v-on:lowAce="lowAce"
+      />
     </section>
     <section class="player hand">
-      <Hand :hand="hand[1]" />
+      <Hand
+        :hand="hand[1]"
+        v-on:log="log"
+        v-on:blackjack="blackjack(player)"
+        v-on:bust="bust(player)"
+        v-on:lowAce="lowAce"
+      />
     </section>
     <section class="controls">
-        <Controls
-    v-on:shuffle="dealRound"
-    v-on:deal-up="deal(false, 1)"
-    v-on:deal-down="deal(false, 0)"
-    v-on:reveal="revealDealer"
-  />
-      </section>
+      <Controls
+        :enabledButtons="enabledButtons"
+        v-on:shuffle="dealRound"
+        v-on:deal-up="deal(false, 1)"
+        v-on:deal-down="deal(false, 0)"
+        v-on:reveal="revealDealer"
+        v-on:wipe="wipe"
+        v-on:log="log"
+      />
+    </section>
   </transition-group>
 </template>
 
@@ -29,11 +44,21 @@ export default {
       suits: "♠︎ ♥︎ ♣︎ ♦︎".split(" "),
       deck: [],
       hand: [[], []],
+      enabledButtons: [true, true, true, true, true],
     };
+  },
+  computed: {
+    dealer() {
+      return this.hand[0];
+    },
+    player() {
+      return this.hand[1];
+    },
   },
   created() {
     this.displayInitialDeck();
-    this.shuffleDeck();
+    this.deck.reverse();
+    //this.shuffleDeck();
     console.log(this.deck);
     this.dealRound();
   },
@@ -84,6 +109,10 @@ export default {
     },
     dealRound() {
       const q = [1, 0, 1, 0];
+      this.enabledButtons = [false, false, false, false, false];
+      setTimeout(() => {
+        this.enabledButtons = [true, true, true, true, true];
+      }, 2300);
       let faceDown = false;
       q.forEach((handIndex, i) => {
         setTimeout(() => {
@@ -92,15 +121,34 @@ export default {
         }, 500 * (i + 1));
       });
     },
-    revealDealer(){
-      console.log(this.hand[1][0])
-      this.hand[1].forEach((card)=> {
-        card.faceDown = false
-      })
+    revealDealer() {
+      this.dealer.forEach((card) => {
+        card.faceDown = false;
+      });
       //this.hand[0][0].faceDown = false;
     },
-    wipe(){
-    }
+    lowAce(card) {
+      card.value = 1;
+      console.log("lowered Ace?");
+    },
+    // eslint-disable-next-line no-unused-vars
+    blackjack(user) {
+      console.log(user);
+      console.log("Blackjack")
+    },
+    // eslint-disable-next-line no-unused-vars
+    bust(user) {
+      console.log(user);
+      console.log("Bust!")
+    },
+    wipe() {
+      this.hand = [[], []];
+    },
+    log(e) {
+      console.log(e);
+      console.log(this.player.hand)
+      console.log(this.player.name)
+    },
   },
   components: {
     Hand,
@@ -119,26 +167,26 @@ export default {
   margin-top: 60px;
 }
 
-.hand { 
+.hand {
   height: 12em;
   padding: 2em;
   display: flex;
   align-items: center;
 }
-.player{
-  flex: 1 0; 
+.player {
+  flex: 1 0;
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-around;
 }
-.dealer{
+.dealer {
   margin-top: 1rem;
   display: flex;
   flex-flow: row nowrap;
   justify-content: center;
   min-height: 12.4rem;
 }
-.controls{
+.controls {
   padding: 2em;
   display: flex;
   flex-flow: row nowrap;

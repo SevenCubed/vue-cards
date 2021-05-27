@@ -28,25 +28,36 @@ export default {
   },
   computed: {
     total() {
-    if (this.hand.length < 2) return
-    if (this.hand.find(card => card.faceDown)) return
-    let valueMap = this.hand.map(card => card.value);
-    let total = valueMap.reduce((x, y) => x + y);
-    let lowAce = 0;
-    console.log(this.hand[0])
-    if (total > 21) {
+      if (this.hand.length < 2) return;
+      let valueMap = this.hand.map((card) => card.value);
+      let total = valueMap.reduce((x, y) => x + y);
+      let lowAce = 0;
+      if (this.hand.find((card) => card.faceDown)) return;
+      if (this.hand.length == 2 && total < 21) this.$emit("blackjack"); //Blackjack
+      if (total > 21) {
         if (valueMap.indexOf(11) != -1) {
-            //this.hand[this.hand.indexOf(11)].value = 1 //No mutating props? Emit!
-            lowAce = 10;
-            console.log('Low Ace detected, substracting 10')
+          this.$emit("lowAce", this.hand[valueMap.indexOf(11)]);
+          lowAce = 10; //This needs to stay because it won't update on the first tick of the low Ace emit
+          console.log("Low Ace detected, substracting 10");
         }
-    }
-    return total-lowAce;
+        if (total - lowAce > 21) this.$emit("bust"); //Bust
+      }
+      // this.$emit("log", total - lowAce);
+      return total - lowAce;
+    },
+    blackjack() {
+      if (this.hand.length == 2 && this.total <= 21) return true;
+      return false;
+    },
+    bust() {
+      if (this.total > 21) {
+        return true;
+      }
+      return false;
     },
   },
 };
 </script>
-
 
 <style scoped>
 .game-hand {
