@@ -1,16 +1,16 @@
 <template>
   <section class="game-controls">
     <GameButton
-      action="deal"
+      action="hit"
       label="HIT"
       :isEnabled="enabledButtons[0]"
-      v-on:deal="$emit('deal-up')"
+      v-on:hit="$emit('hit')"
     />
     <GameButton
-      action="deal"
-      label="DEALER"
+      action="stand"
+      label="STAND"
       :isEnabled="enabledButtons[1]"
-      v-on:deal="$emit('deal-down')"
+      v-on:stand="$emit('stand')"
     />
     <GameButton
       action="shuffle"

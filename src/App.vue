@@ -1,30 +1,29 @@
 <template>
-  <h1>Vue cards</h1>
   <transition-group name="shuffleMedium" tag="div">
-    <section class="dealer hand">
+    <section class="dealerHand hand">
       <Hand
         :hand="hand[0]"
+        :result="dealer.result"
         v-on:log="log"
-        v-on:blackjack="blackjack(dealer)"
-        v-on:bust="bust(dealer)"
         v-on:lowAce="lowAce"
+        v-on:total="total($event, dealer)"
       />
     </section>
-    <section class="player hand">
+    <section class="playerHand hand">
       <Hand
         :hand="hand[1]"
+        :result="player.result"
         v-on:log="log"
-        v-on:blackjack="blackjack(player)"
-        v-on:bust="bust(player)"
         v-on:lowAce="lowAce"
+        v-on:total="total($event, player)"
       />
     </section>
     <section class="controls">
       <Controls
         :enabledButtons="enabledButtons"
         v-on:shuffle="dealRound"
-        v-on:deal-up="deal(false, 1)"
-        v-on:deal-down="deal(false, 0)"
+        v-on:hit="deal(false, 1)"
+        v-on:stand="stand"
         v-on:reveal="revealDealer"
         v-on:wipe="wipe"
         v-on:log="log"
@@ -45,20 +44,41 @@ export default {
       deck: [],
       hand: [[], []],
       enabledButtons: [true, true, true, true, true],
+      draws: 0,
+      player: {
+        name: "Human",
+        blackjack: false,
+        total: 0,
+        bust: false,
+        handIndex: 1,
+        wins: 0,
+        result: null
+      },
+      dealer: {
+        name: "Dealer",
+        blackjack: false,
+        total: 0,
+        bust: false,
+        handIndex: 0,
+        wins: 0,
+        result: null
+      },
+      delay: 500,
+      result: null,
     };
   },
   computed: {
-    dealer() {
+    dealerHand() {
       return this.hand[0];
     },
-    player() {
+    playerHand() {
       return this.hand[1];
     },
   },
   created() {
     this.displayInitialDeck();
-    this.deck.reverse();
-    //this.shuffleDeck();
+    // this.deck.reverse(); //This was for debugging low aces, a reversed deck starts with the Ace of Spades
+    this.shuffleDeck();
     console.log(this.deck);
     this.dealRound();
   },
@@ -108,46 +128,172 @@ export default {
       this.hand[index].push(newCard);
     },
     dealRound() {
-      const q = [1, 0, 1, 0];
+      const q = [1, 0, 1, 0]; //player, dealer, player, dealer
       this.enabledButtons = [false, false, false, false, false];
       setTimeout(() => {
         this.enabledButtons = [true, true, true, true, true];
-      }, 2300);
+      }, this.delay * 4.5);
       let faceDown = false;
       q.forEach((handIndex, i) => {
         setTimeout(() => {
           i == 1 ? (faceDown = true) : (faceDown = false);
           this.deal(faceDown, handIndex);
-        }, 500 * (i + 1));
+        }, this.delay * (i + 1));
       });
     },
     revealDealer() {
-      this.dealer.forEach((card) => {
+      this.hand[0].forEach((card) => {
         card.faceDown = false;
       });
-      //this.hand[0][0].faceDown = false;
     },
     lowAce(card) {
       card.value = 1;
-      console.log("lowered Ace?");
     },
-    // eslint-disable-next-line no-unused-vars
-    blackjack(user) {
-      console.log(user);
-      console.log("Blackjack")
+    total(event, user) {
+      user.total = event;
+      console.log(user.total);
+      //Blackjack
+      if (this.hand[user.handIndex].length == 2 && user.total == 21) {
+        user.blackjack = true;
+        if (user == this.player) {
+          setTimeout(() => {
+            this.revealDealer();
+          }, this.delay / 2);
+          setTimeout(() => {
+            this.eval();
+          }, this.delay);
+        }
+      }
+      //Bust
+      if (user.total > 21) {
+        user.bust = true;
+        console.log("BUST");
+        if (user == this.player) {
+          this.enabledButtons[0] = false;
+          this.enabledButtons[1] = false;
+          setTimeout(() => {
+            this.revealDealer();
+          }, this.delay / 2);
+          setTimeout(() => {
+            this.eval();
+          }, this.delay);
+          //go to eval, player busted
+        }
+      }
     },
-    // eslint-disable-next-line no-unused-vars
-    bust(user) {
-      console.log(user);
-      console.log("Bust!")
+    stand() {
+      this.enabledButtons = [false, false, false, false, false];
+      this.revealDealer();
+      console.log(this.dealer.total);
+      this.dealerDraw();
+    },
+    dealerDraw() {
+      if (
+        (this.dealer.total < 17 ||
+          (this.dealer.total < 16 && this.player.total == 16)) &&
+        !this.player.bust &&
+        !this.player.blackjack
+      ) {
+        setTimeout(() => {
+          this.deal(false, 0);
+        }, this.delay);
+        setTimeout(() => {
+          this.dealerDraw();
+        }, this.delay + 50);
+        //I'm doing it like this because the While function from my old script basically bugged out.
+        //My guess it that it's to do with the fact that I emit the totals from the components, which introduces a bit of lag and allows the while function to basically loop a ton of times
+        //before it actually updates and processes that the total is above 17
+        //On my first attempt the browser froze.
+        //On my second attempt I was allowed to draw a total of 332, which is probably the whole deck.
+        //This is also the reason that the repeated dealerDraw call is 50 ms later, to allow the total to actually update.
+      } else {
+        console.log("done");
+        setTimeout(() => {
+          this.eval();
+        }, this.delay);
+      }
+    },
+    eval() {
+      // eslint-disable-next-line no-unused-vars
+      let result, details;
+      //Why doesn't it see these?
+      switch (true) {
+        case this.player.blackjack && this.dealer.blackjack:
+          console.log(
+            "Draw: Both the player as the dealer have a blackjack! What are the odds!?"
+          );
+          result = "Push";
+          details = `Both ${this.player.name} as the dealer have a blackjack! What are the odds!?`;
+          this.draws++;
+          break;
+        case this.player.blackjack:
+          console.log("Victory: Player won through blackjack.");
+          result = "Win";
+          details = `${this.player.name} won through blackjack!`;
+          this.player.wins++;
+          break;
+        case this.dealer.blackjack:
+          console.log("Defeat: dealer won through blackjack");
+          result = "Lose";
+          details = "The this.dealer won through blackjack?";
+          this.dealer.wins++;
+          break;
+        case this.player.bust:
+          console.log("Defeat: Player busted.");
+          result = "Lose";
+          details = `${this.player.name} busted.`;
+          this.dealer.wins++;
+          break;
+        case this.dealer.bust:
+          console.log("Victory: dealer busted.");
+          result = "Win";
+          details = "The this.dealer busted.";
+          this.player.wins++;
+          break;
+        /*case (this.player.hand.length >=5 && !this.playerbust):
+            console.log('Victory: Five card trick! ... But this is a casino game, so we don't use that rule.)
+            this.player.wins++
+            break;      */
+        case this.dealer.total == this.player.total:
+          console.log("Draw: dealer scored equal to the player.");
+          result = "Push";
+          details = `${this.player.name} and the dealer have the same score!`;
+          this.draws++;
+          break;
+        case this.dealer.total > this.player.total:
+          console.log("Defeat: dealer scored higher than the player.");
+          result = "Lose";
+          details = `The this.dealer scored higher than ${this.player.name}!`;
+          this.dealer.wins++;
+          break;
+        case this.player.total > this.dealer.total:
+          console.log("Victory: Player scored higher than the dealer.");
+          result = "Win";
+          details = `${this.player.name} scored higher than the this.dealer!`;
+          this.player.wins++;
+          break;
+        default:
+          result = "Something broke.";
+          details = "I dunno how you got here, but please leave.";
+          break;
+      }
+      this.result = result;
+      setTimeout(() => {
+        this.wipe();
+      }, this.delay);
     },
     wipe() {
       this.hand = [[], []];
+      this.player.blackjack = false;
+      this.player.bust = false;
+      this.dealer.blackjack = false;
+      this.dealer.bust = false;
+      setTimeout(() => {
+        this.dealRound();
+      }, this.delay);
     },
-    log(e) {
-      console.log(e);
-      console.log(this.player.hand)
-      console.log(this.player.name)
+    log() {
+      console.log(this.dealer.total);
     },
   },
   components: {
@@ -173,13 +319,13 @@ export default {
   display: flex;
   align-items: center;
 }
-.player {
+.playerHand {
   flex: 1 0;
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-around;
 }
-.dealer {
+.dealerHand {
   margin-top: 1rem;
   display: flex;
   flex-flow: row nowrap;

@@ -1,7 +1,7 @@
 <template>
   <transition name="pop">
     <span
-      v-if="total"
+      v-if="visible"
       class="hand-total"
       :class="{ 'bust': total > 21, 'twenty-one': total === 21 }">
       {{ total }}
@@ -14,11 +14,15 @@ export default {
   props: {
     hand: {
       type: Object,
-      required: true
+      required: true,
     },
     total: {
         type: Number,
         required: true
+    },
+    visible: {
+      type: Boolean,
+      required: true
     }
   },
   // computed: {

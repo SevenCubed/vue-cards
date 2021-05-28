@@ -3,13 +3,15 @@
     <transition-group name="deal" tag="div" class="cards">
       <Card v-for="card in hand" :key="card.id" :card="card" />
     </transition-group>
-    <Total :total="total" :hand="hand" />
+    <Total :total="total" :visible="visible" :hand="hand" />
+    <Result :result="result"/>
   </div>
 </template>
 
 <script>
 import Card from "./Card";
 import Total from "./Total";
+import Result from "./Result";
 export default {
   props: {
     hand: {
@@ -21,39 +23,37 @@ export default {
       required: false,
       default: false,
     },
+    result: {
+      type: String,
+      required: false,
+    }
   },
   components: {
     Card,
     Total,
+    Result,
   },
   computed: {
     total() {
-      if (this.hand.length < 2) return;
+      if (this.hand.length < 2) return NaN;
       let valueMap = this.hand.map((card) => card.value);
       let total = valueMap.reduce((x, y) => x + y);
       let lowAce = 0;
-      if (this.hand.find((card) => card.faceDown)) return;
-      if (this.hand.length == 2 && total < 21) this.$emit("blackjack"); //Blackjack
       if (total > 21) {
         if (valueMap.indexOf(11) != -1) {
           this.$emit("lowAce", this.hand[valueMap.indexOf(11)]);
           lowAce = 10; //This needs to stay because it won't update on the first tick of the low Ace emit
           console.log("Low Ace detected, substracting 10");
         }
-        if (total - lowAce > 21) this.$emit("bust"); //Bust
+        // if (total - lowAce > 21) this.$emit("bust"); //Bust
       }
-      // this.$emit("log", total - lowAce);
+      this.$emit("total", total - lowAce);
       return total - lowAce;
     },
-    blackjack() {
-      if (this.hand.length == 2 && this.total <= 21) return true;
-      return false;
-    },
-    bust() {
-      if (this.total > 21) {
-        return true;
-      }
-      return false;
+    visible() {
+      if (this.hand.length < 2) return false;
+      if (this.hand.find((card) => card.faceDown)) return false;
+      return true;
     },
   },
 };
