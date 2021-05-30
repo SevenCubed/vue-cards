@@ -35,6 +35,7 @@
 <script>
 import Controls from "./components/Controls";
 import Hand from "./components/Hand";
+//TODO: Make the BJ thingy look good, and add option 5 card trick
 export default {
   name: "App",
   data() {
@@ -52,7 +53,7 @@ export default {
         bust: false,
         handIndex: 1,
         wins: 0,
-        result: null
+        result: null,
       },
       dealer: {
         name: "Dealer",
@@ -61,10 +62,9 @@ export default {
         bust: false,
         handIndex: 0,
         wins: 0,
-        result: null
+        result: null,
       },
       delay: 500,
-      result: null,
     };
   },
   computed: {
@@ -76,14 +76,14 @@ export default {
     },
   },
   created() {
-    this.displayInitialDeck();
+    this.createDeck();
     // this.deck.reverse(); //This was for debugging low aces, a reversed deck starts with the Ace of Spades
     this.shuffleDeck();
     console.log(this.deck);
     this.dealRound();
   },
   methods: {
-    displayInitialDeck() {
+    createDeck() {
       this.deck = [];
       let s, r, v, i; //suit, rank, value, color, name, bitvalue, index
       for (i = 0; i < 52; i++) {
@@ -222,31 +222,35 @@ export default {
           console.log(
             "Draw: Both the player as the dealer have a blackjack! What are the odds!?"
           );
-          result = "Push";
+          this.player.result = "Blackjack";
+          this.dealer.result = "Blackjack";
           details = `Both ${this.player.name} as the dealer have a blackjack! What are the odds!?`;
           this.draws++;
           break;
         case this.player.blackjack:
           console.log("Victory: Player won through blackjack.");
-          result = "Win";
+          this.player.result = "Blackjack";
           details = `${this.player.name} won through blackjack!`;
           this.player.wins++;
           break;
         case this.dealer.blackjack:
           console.log("Defeat: dealer won through blackjack");
-          result = "Lose";
+          this.dealer.result = "Blackjack";
+          this.player.result = "Lose";
           details = "The this.dealer won through blackjack?";
           this.dealer.wins++;
           break;
         case this.player.bust:
           console.log("Defeat: Player busted.");
-          result = "Lose";
+          this.player.result = "Bust";
+          this.dealer.result = "Win";
           details = `${this.player.name} busted.`;
           this.dealer.wins++;
           break;
         case this.dealer.bust:
           console.log("Victory: dealer busted.");
-          result = "Win";
+          this.player.result = "Win";
+          this.dealer.result = "Bust";
           details = "The this.dealer busted.";
           this.player.wins++;
           break;
@@ -256,19 +260,22 @@ export default {
             break;      */
         case this.dealer.total == this.player.total:
           console.log("Draw: dealer scored equal to the player.");
-          result = "Push";
+          this.player.result = "Push";
+          this.dealer.result = "Push";
           details = `${this.player.name} and the dealer have the same score!`;
           this.draws++;
           break;
         case this.dealer.total > this.player.total:
           console.log("Defeat: dealer scored higher than the player.");
-          result = "Lose";
+          this.player.result = "Lose";
+          this.dealer.result = "Win";
           details = `The this.dealer scored higher than ${this.player.name}!`;
           this.dealer.wins++;
           break;
         case this.player.total > this.dealer.total:
           console.log("Victory: Player scored higher than the dealer.");
-          result = "Win";
+          this.player.result = "Win";
+          this.player.result = "Lose";
           details = `${this.player.name} scored higher than the this.dealer!`;
           this.player.wins++;
           break;
@@ -277,10 +284,9 @@ export default {
           details = "I dunno how you got here, but please leave.";
           break;
       }
-      this.result = result;
       setTimeout(() => {
         this.wipe();
-      }, this.delay);
+      }, this.delay * 2);
     },
     wipe() {
       this.hand = [[], []];
@@ -288,6 +294,12 @@ export default {
       this.player.bust = false;
       this.dealer.blackjack = false;
       this.dealer.bust = false;
+      this.dealer.result = null;
+      this.player.result = null;
+      if (this.deck.length < 34){
+        this.createDeck()
+        this.shuffleDeck()
+      }
       setTimeout(() => {
         this.dealRound();
       }, this.delay);
