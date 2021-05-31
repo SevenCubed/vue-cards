@@ -27,6 +27,7 @@
         v-on:reveal="revealDealer"
         v-on:wipe="wipe"
         v-on:log="log"
+        v-on:options="sidebarToggle"
       />
     </section>
   </transition-group>
@@ -35,7 +36,6 @@
 <script>
 import Controls from "./components/Controls";
 import Hand from "./components/Hand";
-//TODO: Make the BJ thingy look good, and add option 5 card trick
 export default {
   name: "App",
   data() {
@@ -174,10 +174,10 @@ export default {
           setTimeout(() => {
             this.revealDealer();
           }, this.delay / 2);
+          //go to eval, player busted
           setTimeout(() => {
             this.eval();
           }, this.delay);
-          //go to eval, player busted
         }
       }
     },
@@ -203,6 +203,7 @@ export default {
         //I'm doing it like this because the While function from my old script basically bugged out.
         //My guess it that it's to do with the fact that I emit the totals from the components, which introduces a bit of lag and allows the while function to basically loop a ton of times
         //before it actually updates and processes that the total is above 17
+        //In JS I can't actually pause or wait execution (I think), and settimeout just delays whatever it's meant to execute, but keeps executing the code right after it.
         //On my first attempt the browser froze.
         //On my second attempt I was allowed to draw a total of 332, which is probably the whole deck.
         //This is also the reason that the repeated dealerDraw call is 50 ms later, to allow the total to actually update.
@@ -275,7 +276,7 @@ export default {
         case this.player.total > this.dealer.total:
           console.log("Victory: Player scored higher than the dealer.");
           this.player.result = "Win";
-          this.player.result = "Lose";
+          this.dealer.result = "Lose";
           details = `${this.player.name} scored higher than the this.dealer!`;
           this.player.wins++;
           break;
@@ -296,9 +297,9 @@ export default {
       this.dealer.bust = false;
       this.dealer.result = null;
       this.player.result = null;
-      if (this.deck.length < 34){
-        this.createDeck()
-        this.shuffleDeck()
+      if (this.deck.length < 34) {
+        this.createDeck();
+        this.shuffleDeck();
       }
       setTimeout(() => {
         this.dealRound();
@@ -306,6 +307,7 @@ export default {
     },
     log() {
       console.log(this.dealer.total);
+      this.player.result = "Blackjack";
     },
   },
   components: {
@@ -343,6 +345,11 @@ export default {
   flex-flow: row nowrap;
   justify-content: center;
   min-height: 12.4rem;
+}
+.options {
+  display: absolute;
+  left: 10px;
+  top: 5px;
 }
 .controls {
   padding: 2em;
