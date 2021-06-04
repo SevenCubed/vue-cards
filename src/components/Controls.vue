@@ -27,6 +27,8 @@ export default {
   },
 };
 
+// CR :: haal code e ruit wat niet gebruikt wordt
+
     // <GameButton
     //   action="shuffle"
     //   label="NEW"

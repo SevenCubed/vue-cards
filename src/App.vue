@@ -19,6 +19,7 @@
       />
     </section>
     <section class="controls">
+      <!-- CR :: haal code er uit wat niet gebruikt wordt -->
       <Controls
         :enabledButtons="enabledButtons"
         v-on:shuffle="dealRound"
@@ -85,8 +86,10 @@ export default {
   methods: {
     createDeck() {
       this.deck = [];
+      // CR :: variabele namen gebruiken die je er achter hebt gezet, dan is duidelijk wat het is verderop in de code
       let s, r, v, i; //suit, rank, value, color, name, bitvalue, index
       for (i = 0; i < 52; i++) {
+        // CR :: comments zijn niet nodig als je de variabelen gewoon netjes uitschrijft
         r = i % 13; //rank
         s = this.suits[Math.floor(i / 13)]; //suit
         v = r + 1 < 10 ? r + 1 : 10; //value, capping at 10 for the face cards
@@ -97,9 +100,11 @@ export default {
           "♣︎": "black",
           "♦︎": "red",
         };
+        // CR :: const
         let card = {
           id: i,
           rank: this.ranks[r],
+          // CR :: als je de variabele suit noemt hoef je hier alleen maar 'suit,' neer te zetten
           suit: s,
           value: v,
           faceDown: false,
@@ -119,10 +124,12 @@ export default {
         //And swap it with the current element.
         [deck[m], deck[i]] = [deck[i], deck[m]];
       }
+      // CR :: return this niet nodig, want je chaint verder nergens
       return this;
     },
     deal(faceDown, index) {
       //console.log(this.hand[index]);
+      // CR :: const
       let newCard = this.deck.pop();
       newCard["faceDown"] = faceDown;
       this.hand[index].push(newCard);

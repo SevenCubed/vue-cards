@@ -42,7 +42,9 @@
         <path d="M43.53,46.22l-4.09-9h-19l-4.09,9H13.85l15-32.43h2.3l15,32.43ZM30,16.41,21.44,35h17Z" transform="translate(-8.19 -13.14)"/>
       </symbol>
     </svg>
-    <svg fill="currentColor" :class="color">
+    <svg fill="currentColor" :class="color" viewBox="0 0 43.62 33.72">
+      <!-- CR :: haal dubbelingen er uit door gebruik te maken van een 'lookup table' -->
+      <!-- <path :d="pathLookup[rank]" transform="translate(-8.19 -13.14)"/> -->
       <use :xlink:href="'#' + rank"></use>
     </svg>
   </div>
@@ -60,6 +62,13 @@ export default {
       required: true
     }
   },
+  data() {
+    return {
+      pathLookup: {
+        1: 'M21.44,21.76l-1.79-1.2c2.81-4.28,5.8-6.9,11.46-6.9,5.47,0,9.57,3.82,9.57,8.88,0,4.46-2.39,7.41-8.05,12.56L22.78,44H41v2.3H19V44.54L31,33.68c5.29-4.83,7.13-7.59,7.13-11,0-4.19-3.4-6.9-7.27-6.9C26.78,15.78,24.11,17.9,21.44,21.76Z'
+      }
+    }
+  }
 }
 </script>
 
